@@ -1,5 +1,5 @@
 PImage myImgPad;
-int degreeResolution = 5;
+int degreeResolution = 1;
 
 void setup(){
   myImgPad = loadImage("myImgPad.png");
@@ -8,14 +8,48 @@ void setup(){
   
   // calculate sinogram (measurements)
   float[][] sinogram = getSinogram(myImgPad);
+  
+  // normalize sinogram for visualization
+  float[][] sinogramNormalized = myNormalize(sinogram);
+  PImage sinogramImg = new PImage(sinogramNormalized.length, sinogramNormalized[0].length);
+  sinogramImg.loadPixels();
+  for(int i = 0; i< sinogramImg.width; i++){
+    for(int j = 0; j < sinogramImg.height; j++){
+      sinogramImg.pixels[j*sinogramImg.width + i] = color(sinogramNormalized[i][j]);
+    }
+  }
+  sinogramImg.updatePixels();
+  
   PImage result = reconstructImage(sinogram);
   
-  //image(myImgPad, 0, 0);
+  image(sinogramImg, 0, 0);
 }
 
 void draw(){
   
   
+}
+
+float[][] myNormalize(float[][] sinogram){
+  float max = Float.MIN_VALUE;
+  
+  for(int i = 0; i < sinogram.length; i++){
+    for(int j = 0; j <sinogram[0].length; j++){
+      if(sinogram[i][j] > max){ 
+        max = sinogram[i][j];
+      }
+    }
+  }
+  
+  float[][] rst = new float[sinogram.length][sinogram[0].length];
+  
+  for(int i = 0; i < sinogram.length; i++){
+    for(int j = 0; j <sinogram[0].length; j++){
+      rst[i][j] = (sinogram[i][j] / max) * 255;
+    }
+  }
+  
+  return rst;
 }
 
 /* 
@@ -30,41 +64,45 @@ float[][] getSinogram(PImage input){
     exit();
   }
   int iSize = input.width;
-  
-  for(int i = 0; i < iSize; i++){
-    for (int j = 0; j < iSize; j++){
-      color c = input.get(j, i);
-      float pixelV = red(c); // gray scale image rgb channels are the same
+  int step = (int)(180 / degreeResolution);
+  float[][] sinogram = new float[step][iSize];
+
+  for(int i = 0; i < step; i++){
+    // use PGraphics to rotate an image
+    PGraphics pg = rotateImg(input, i*degreeResolution);
+
+    // take projections - summing pixel values along columns of the input image
+    float[] oneProjectionMeasurements = new float [iSize];
+    
+    for(int c = 0; c < iSize; c++){
+      float sumV = 0;
+      for(int r = 0; r < iSize; r++){
+        sumV += red(pg.pixels[r*iSize + c]);
+      }
+      oneProjectionMeasurements[c] = sumV;
     }
+    sinogram[i] = oneProjectionMeasurements;
   }
-  
-  // use PGraphics to rotate an image
-  PGraphics pg = rotateImg(input);
-  image(pg, 0, 0);
-  
-  for(int i = 0; i < pg.width*pg.height; i++){
-      color c = pg.pixels[i];
-      float pixelV = red(c); // gray scale image rgb channels are the same
-      if(pixelV != 0) println(pixelV);
-  }
-  
-  float[][] rst = new float[1][1];
-  
-  return rst;
+  return sinogram;
 }
 
-PGraphics rotateImg(PImage input){
+PGraphics rotateImg(PImage input, float degreeAngle){
   PGraphics pg = createGraphics(input.width, input.height, P2D);
   pg.pushMatrix();
   pg.beginDraw();
   pg.background(0); // fill margins due to rotation with 0s
   pg.translate(pg.width/2, pg.height/2);
-  pg.rotate(radians(45));
+  pg.rotate(radians(degreeAngle));
   pg.imageMode(CENTER);
   pg.image(input, 0, 0);
   pg.loadPixels();
   pg.endDraw();
   pg.popMatrix();
+  
+  if(pg.width != input.width){
+    println("image dimension changed after rotation!");
+    exit();
+  }
   return pg;
 }
 
