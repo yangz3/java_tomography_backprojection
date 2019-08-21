@@ -24,9 +24,14 @@ void setup(){
   
   PImage result = backProjection(sinogram);
   
+  fill(0,255,0);
+  textAlign(LEFT, TOP);
   image(myImgPad, 0, 0, displaySize, displaySize);
+  text("Original", 0, 0);
   image(sinogramImg, displaySize+30, 0, displaySize, displaySize);
+  text("Projection measurements", displaySize+30, 0);
   image(result, displaySize*2+60, 0, displaySize, displaySize);
+  text("Reconstructed image", displaySize*2+60, 0);
 }
 
 void draw(){
