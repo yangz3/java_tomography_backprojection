@@ -10,3 +10,8 @@ A Java version of the linear back-projection algorithm for tomographic reconstru
 The reconstruction results should appear on the window:
 
 <img src="./ui.png" align="reconstruction" >
+
+## Todo
+
+1) Add filter on sinogram with FFT
+2) Make interactive version
