@@ -1,5 +1,5 @@
-# java_tomography_backprojection
-A Java version of the linear back-projection algorithm for tomographic reconstruction
+# java tomography backprojection
+A Java version of the linear back-projection algorithm for tomographic reconstruction.
 
 ## Usage
 
@@ -9,4 +9,4 @@ A Java version of the linear back-projection algorithm for tomographic reconstru
 
 The reconstruction results should appear on the window:
 
-<img src="./ui.png" align="reconstruction" width="400" >
+<img src="./ui.png" align="reconstruction" >
