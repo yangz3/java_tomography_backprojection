@@ -1,7 +1,7 @@
-# java tomography backprojection
-A Java version of the linear back-projection algorithm for tomographic reconstruction.
+# Tomography Backprojection
+A Java version of the linear back-projection algorithm for tomographic reconstruction, implemented in Processing.
 
-## Usage
+## Basic Reconstruction
 
 1) Download Processing IDE from: https://processing.org/download/
 2) Download or clone this respository
@@ -11,6 +11,9 @@ The reconstruction results should appear on the window:
 
 <img src="./ui.png" align="reconstruction" >
 
-## Todo
+## Interactive Reconstruction
+1) Run lbp_interactive_version.pde 
+2) Drag and drop the reposition the obstacles inside the container interior
 
-1) Make interactive version
+<img src="./interactivetomogif.gif" alt="" width="500"/>
+
