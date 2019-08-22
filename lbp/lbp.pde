@@ -1,3 +1,6 @@
+import ddf.minim.*;
+import ddf.minim.analysis.*;
+
 PImage myImgPad;
 int degreeResolution = 10;
 int displaySize = 300;
@@ -5,7 +8,7 @@ int displaySize = 300;
 void setup(){
   myImgPad = loadImage("myImgPad.png");
   
-  size(960, 300, P2D);
+  size(960, 630, P2D);
   
   // calculate sinogram (measurements)
   float[][] sinogram = getSinogram(myImgPad);
@@ -22,16 +25,38 @@ void setup(){
   }
   sinogramImg.updatePixels();
   
+  float[][] filteredSinogram = filterSinogram(sinogram);
+  float[][] filteredSinogramNormalized = myNormalize(filteredSinogram);
+  
+  PImage filteredSinogramImg = new PImage(filteredSinogramNormalized.length, filteredSinogramNormalized[0].length);
+  filteredSinogramImg.loadPixels();
+  for(int i = 0; i< filteredSinogramImg.width; i++){
+    for(int j = 0; j < filteredSinogramImg.height; j++){
+      filteredSinogramImg.pixels[j*filteredSinogramImg.width + i] = color(filteredSinogramNormalized[i][j]);
+    }
+  }
+  filteredSinogramImg.updatePixels();
+  
   PImage result = backProjection(sinogram);
+  PImage filteredResult = backProjection(filteredSinogram);
+  
   
   fill(0,255,0);
   textAlign(LEFT, TOP);
+  
   image(myImgPad, 0, 0, displaySize, displaySize);
   text("Original", 0, 0);
+  
   image(sinogramImg, displaySize+30, 0, displaySize, displaySize);
-  text("Projection measurements", displaySize+30, 0);
-  image(result, displaySize*2+60, 0, displaySize, displaySize);
+  text("Projection measurements (sinogram)", displaySize+30, 0);
+  image(filteredSinogramImg, displaySize+30, displaySize+30, displaySize, displaySize);
+  text("Filtered projection measurements (sinogram)", displaySize+30, displaySize+30);
+  
+  
+  image(result, displaySize*2+60,  0, displaySize, displaySize);
   text("Reconstructed image", displaySize*2+60, 0);
+  image(filteredResult, displaySize*2+60,  displaySize+30, displaySize, displaySize);
+  text("Filtered reconstructed image", displaySize*2+60, displaySize+30);
 }
 
 void draw(){
@@ -59,6 +84,30 @@ float[][] myNormalize(float[][] input){
     for(int j = 0; j <input[0].length; j++){
       rst[i][j] = (input[i][j] / max) * 255;
     }
+  }
+  
+  return rst;
+}
+
+/* Filter sinogram with FFT high pass filter
+*/
+
+float[][] filterSinogram(float[][] input){
+  
+  FFT fft = new FFT(input[0].length, 1);
+
+  float[][] rst = new float[input.length][input[0].length];
+
+  
+  for(int i = 0; i < input.length; i++){
+    fft.forward(input[i]);
+    
+    for(int j = 0; j < fft.specSize()/2; j++){
+      float factor = 0.03;
+      fft.setBand(j, fft.getBand(j) * factor);
+    }
+    
+    fft.inverse(rst[i]);
   }
   
   return rst;
@@ -117,15 +166,6 @@ PGraphics rotateImg(PImage input, float degreeAngle){
   return pg;
 }
 
-void showImg(PGraphics pg){
-  PImage myImg = new PImage(pg.width, pg.height);
-  myImg.loadPixels();
-  for (int i = 0; i < pg.width*pg.height; i++) {
-    myImg.pixels[i] = pg.pixels[i];
-  }
-   myImg.updatePixels();
-  //image(myImg, 0, 0);
-}
 
 /* An inverse process, use measurements to reconstruct an image
    Reconstruct original image by projecting the measurements back (backprojection)
@@ -196,7 +236,8 @@ PImage backProjection (float[][] sinogram){
   return reconImg;
 }
 
-void show(float[][] r){ // my debug function to print out matrix
+// my debug function to print out matrix
+void show(float[][] r){ 
   for(int i = 0; i < r.length; i++){
     for(int j = 0; j < r[0].length; j++){
       print(r[i][j]);

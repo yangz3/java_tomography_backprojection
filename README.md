@@ -13,5 +13,4 @@ The reconstruction results should appear on the window:
 
 ## Todo
 
-1) Add filter on sinogram with FFT
-2) Make interactive version
+1) Make interactive version
