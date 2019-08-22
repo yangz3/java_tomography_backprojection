@@ -15,5 +15,5 @@ The reconstruction results should appear on the window:
 1) Run lbp_interactive_version.pde 
 2) Drag and drop the reposition the obstacles inside the container interior
 
-<img src="./interactivetomogif.gif" alt="" width="500"/>
+<img src="./interactivetomogif.gif" alt="" width="1000"/>
 
