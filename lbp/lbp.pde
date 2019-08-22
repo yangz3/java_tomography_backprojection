@@ -7,6 +7,10 @@ int displaySize = 300;
 
 void setup(){
   myImgPad = loadImage("myImgPad.png");
+  if(!isPowerOfTwo(myImgPad.width) || !isPowerOfTwo(myImgPad.height)){
+    println("Input image has to have a size of power of 2!");
+    exit();
+  }
   
   size(960, 630, P2D);
   
@@ -102,6 +106,10 @@ float[][] filterSinogram(float[][] input){
   for(int i = 0; i < input.length; i++){
     fft.forward(input[i]);
     
+    // This is a very simple high pass filter which attenuates frequencies below fft.specSize()/2 to demonstrate the idea
+    // Better high pass filters will yield better results with higher resolutions and lower noise
+    // For more information on backprojection filters, refer to: https://www.clear.rice.edu/elec431/projects96/DSP/filters.html
+    
     for(int j = 0; j < fft.specSize()/2; j++){
       float factor = 0.03;
       fft.setBand(j, fft.getBand(j) * factor);
@@ -146,6 +154,10 @@ float[][] getSinogram(PImage input){
   return sinogram;
 }
 
+/* 
+ A helper function for the forward process
+ to rotate an image by an arbitrary angle
+*/
 PGraphics rotateImg(PImage input, float degreeAngle){
   PGraphics pg = createGraphics(input.width, input.height, P2D);
   pg.pushMatrix();
@@ -236,7 +248,8 @@ PImage backProjection (float[][] sinogram){
   return reconImg;
 }
 
-// my debug function to print out matrix
+/* My debug function to print out matrix
+*/
 void show(float[][] r){ 
   for(int i = 0; i < r.length; i++){
     for(int j = 0; j < r[0].length; j++){
@@ -246,4 +259,25 @@ void show(float[][] r){
     println();
   }
   println();
+}
+
+/* A helper function to check if image size is power of 2 
+   Minim FFT can only work with input with a length of power of 2
+   So the input image has to have a size (width and length) of power of 2
+*/
+boolean isPowerOfTwo(int n) {
+    if(n<=0) 
+        return false;
+ 
+    while(n>2){
+        int t = n>>1;
+        int c = t<<1;
+ 
+        if(n-c != 0)
+            return false;
+ 
+        n = n>>1;
+    }
+ 
+    return true;
 }
